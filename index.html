@@ -1,0 +1,439 @@
+<title>116年度住院醫師招募分析</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: report column with a sticky filter bar; four analyses (報名・正取・備取・科部) share one filter state */
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --sunk:#eef1f5; --zebra:#f6f8fb;
+  --ink:#16202b; --ink2:#46525f; --muted:#6f7a87; --line:#dbe0e7;
+  --accent:#1f3a5f; --accent-soft:#e3eaf3;
+  --in:#2a78d6; --out:#eb6834; --cap:#16202b;
+  --ga:#0b6e4f; --gp:#2fa57c; --gb:#8fd6b8; --gc:#c3cad3;
+  --good:#1e7d47; --good-bg:#e2f3e8; --warn:#9a5b00; --warn-bg:#fbefd9; --bad:#b93434; --bad-bg:#fbe4e4;
+  --f-display:var(--f-body);
+  --f-body:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  --f-num:var(--f-body);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10151b; --surface:#171e26; --sunk:#1e2731; --zebra:#1b232c;
+  --ink:#e7ecf1; --ink2:#b4bec9; --muted:#8a96a4; --line:#2b3540;
+  --accent:#a9c6ea; --accent-soft:#1f2c3b;
+  --in:#3987e5; --out:#d95926; --cap:#e7ecf1;
+  --ga:#2fbf8c; --gp:#1f8a66; --gb:#2b5c4b; --gc:#4f5a66;
+  --good:#5cc489; --good-bg:#16301f; --warn:#e3a540; --warn-bg:#33270f; --bad:#f07a7a; --bad-bg:#3a1b1b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#10151b; --surface:#171e26; --sunk:#1e2731; --zebra:#1b232c;
+  --ink:#e7ecf1; --ink2:#b4bec9; --muted:#8a96a4; --line:#2b3540;
+  --accent:#a9c6ea; --accent-soft:#1f2c3b;
+  --in:#3987e5; --out:#d95926; --cap:#e7ecf1;
+  --ga:#2fbf8c; --gp:#1f8a66; --gb:#2b5c4b; --gc:#4f5a66;
+  --good:#5cc489; --good-bg:#16301f; --warn:#e3a540; --warn-bg:#33270f; --bad:#f07a7a; --bad-bg:#3a1b1b; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+h1,h2{font-family:var(--f-display);text-wrap:balance;color:var(--accent);margin:0}
+h1{font-size:clamp(1.55rem,3.6vw,2.15rem);line-height:1.25}
+h2{font-size:1.4rem;line-height:1.3}
+h3{font-size:1rem;margin:0}
+p{margin:0}
+.eyebrow{font-size:.76rem;letter-spacing:.12em;color:var(--muted);font-weight:500}
+
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:26px 18px;display:grid;gap:8px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 18px;color:var(--ink2);font-size:.87rem}
+
+.bar{background:var(--surface);border-bottom:1px solid var(--line);z-index:5}
+@media (min-width:760px){ .bar{position:sticky;top:env(safe-area-inset-top,0px)} }
+.bar .wrap{display:grid;gap:8px;padding-block:10px}
+.navrow{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.navrow a{white-space:nowrap;color:var(--ink2);text-decoration:none;font-size:.85rem;padding:4px 10px;border-radius:6px}
+.navrow a:hover,.navrow a:focus-visible{background:var(--accent-soft);color:var(--accent);outline:none}
+.filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.fl{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}
+select{font:inherit;font-size:.86rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:5px 8px;max-width:11em}
+select:focus-visible{outline:2px solid var(--in);outline-offset:1px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{font:inherit;font-size:.82rem;border:0;background:transparent;color:var(--ink2);padding:5px 10px;cursor:pointer;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.seg button:focus-visible{outline:2px solid var(--in);outline-offset:-2px}
+.reset{font:inherit;font-size:.82rem;background:none;border:0;color:var(--in);cursor:pointer;padding:4px 2px;text-decoration:underline}
+.active-f{font-size:.82rem;color:var(--ink2)}
+.active-f b{color:var(--accent)}
+
+main .wrap{display:grid;gap:42px;padding-block:28px 60px}
+section{display:grid;gap:16px;scroll-margin-top:120px}
+.sec-head{display:grid;gap:6px}
+.lede{color:var(--ink2)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:grid;gap:14px;min-width:0;align-content:start}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 14px}
+.panel-head p{color:var(--muted);font-size:.84rem}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px;align-items:start}
+.grid-wide{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.grid-wide{grid-template-columns:1fr}}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--surface);padding:14px 16px;display:grid;gap:2px}
+.kpi .k{font-size:.8rem;color:var(--muted)}
+.kpi .v{font-size:1.7rem;font-weight:600;line-height:1.2}
+.kpi .s{font-size:.8rem;color:var(--ink2)}
+
+.findings{display:grid}
+.finding{display:grid;grid-template-columns:4.6em 1fr;gap:2px 14px;padding:12px 0;border-top:1px solid var(--line)}
+.finding:first-child{border-top:0;padding-top:0}
+.finding .tag{grid-row:span 2;font-size:.74rem;font-weight:700;padding:2px 0;color:var(--accent)}
+.finding p{color:var(--ink2);font-size:.92rem}
+
+.key{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block;flex:none}
+.sw.i{background:var(--in)} .sw.o{background:var(--out)} .sw.a{background:var(--ga)} .sw.p{background:var(--gp)} .sw.b{background:var(--gb)} .sw.c{background:var(--gc)}
+.sw.cap{background:transparent;border-left:2px solid var(--cap);border-radius:0;width:4px;height:12px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--ink2)}
+
+.bars{display:grid;gap:6px}
+.brow{display:grid;grid-template-columns:7em minmax(0,1fr) 8.6em;gap:10px;align-items:center;font-size:.86rem;border-radius:5px}
+.brow.click{cursor:pointer}
+.brow.click:hover .name,.brow.click:focus-visible .name{color:var(--in);text-decoration:underline}
+.brow.click:focus-visible{outline:2px solid var(--in);outline-offset:2px}
+.brow.sel .name{color:var(--in);font-weight:700}
+.brow.dim{opacity:.38}
+.brow .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .val{color:var(--ink2);font-size:.8rem;white-space:nowrap;text-align:right}
+.track{position:relative;height:18px;background:var(--sunk);border-radius:3px}
+.track .s{position:absolute;top:2px;bottom:2px;display:block}
+.track .s.end{border-radius:0 4px 4px 0}
+.track .s+.s{box-shadow:-2px 0 0 var(--surface)}
+.track .ghost{position:absolute;left:0;top:1px;bottom:1px;border:1.5px dashed var(--muted);border-left:0;border-radius:0 4px 4px 0}
+.track .capm{position:absolute;top:-4px;bottom:-4px;border-left:2px solid var(--cap)}
+.axis{display:grid;grid-template-columns:7em minmax(0,1fr) 8.6em;gap:10px;font-size:.72rem;color:var(--muted)}
+.axis .ticks{position:relative;height:16px}
+.axis .ticks span{position:absolute;transform:translateX(-50%)}
+.empty{color:var(--muted);font-size:.88rem;padding:10px 0}
+
+.stack100{display:grid;gap:10px}
+.srow{display:grid;grid-template-columns:3.4em minmax(0,1fr) 5.6em;gap:10px;align-items:center;font-size:.86rem}
+.strack{display:flex;height:26px;border-radius:4px;overflow:hidden;background:var(--sunk);gap:2px}
+.strack i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.74rem;font-weight:600;color:#fff;min-width:0;overflow:hidden;white-space:nowrap}
+.strack i.c{color:var(--ink)}
+.srow .val{font-size:.8rem;color:var(--ink2);text-align:right}
+
+table.t{width:100%;border-collapse:collapse;font-size:.88rem}
+table.t th,table.t td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.t th{font-size:.76rem;color:var(--muted);font-weight:500}
+table.t th:first-child,table.t td:first-child{text-align:left}
+table.t td.big{font-weight:600}
+table.t tbody tr:nth-child(even):not(.tot){background:var(--zebra)}
+table.t tr.tot td{font-weight:700;background:var(--accent-soft)}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.dt{border-collapse:collapse;width:100%;min-width:900px;font-size:.84rem}
+table.dt th,table.dt td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.dt th{font-weight:500;color:var(--muted);font-size:.76rem;background:var(--sunk)}
+table.dt th.gi{color:var(--in)} table.dt th.go{color:var(--out)}
+table.dt td:first-child,table.dt thead tr:first-child th:first-child{text-align:left;position:sticky;left:0;background:inherit}
+table.dt thead tr:first-child th:first-child{background:var(--sunk)}
+table.dt tbody tr{background:var(--surface);cursor:pointer}
+table.dt tbody tr:nth-child(even){background:var(--zebra)}
+table.dt tbody tr:hover{background:var(--accent-soft)}
+table.dt tbody tr.sel{background:var(--accent-soft)}
+table.dt tbody tr:focus-visible{outline:2px solid var(--in);outline-offset:-2px}
+table.dt .bl{border-left:1px solid var(--line)}
+table.dt tr.tot td{font-weight:700;background:var(--accent-soft);cursor:default}
+.chip{display:inline-block;font-size:.72rem;font-weight:700;padding:1px 7px;border-radius:4px;white-space:nowrap}
+.c-good{background:var(--good-bg);color:var(--good)} .c-warn{background:var(--warn-bg);color:var(--warn)} .c-bad{background:var(--bad-bg);color:var(--bad)}
+.na{color:var(--muted)}
+ul.notes{margin:0;padding-left:1.2em;color:var(--ink2);font-size:.88rem;display:grid;gap:4px}
+
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.8rem;line-height:1.5;padding:7px 10px;border-radius:6px;max-width:260px;opacity:0;transition:opacity .1s}
+#tip.on{opacity:1}
+footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line)}
+footer .wrap{padding-block:18px 28px}
+@media (max-width:560px){
+  .brow,.axis{grid-template-columns:5.4em minmax(0,1fr) 6.4em;gap:8px}
+  .brow{font-size:.8rem} .brow .val{font-size:.74rem}
+  .panel{padding:14px}
+  select{max-width:9em}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top"><div class="wrap">
+  <span class="eyebrow">奇美醫院 醫學教育委員會 ・ 教學部 ・ 人力資源部</span>
+  <h1>116 年度住院醫師招募結果分析</h1>
+  <div class="meta">
+    <span>報考名單 <b class="num">216</b> 人次（<b class="num">202</b> 人）</span>
+    <span>榜單日期 115.10.19</span>
+    <span>「本院受訓」＝曾任本院 PGY 或曾在本院實習（UGY）</span>
+  </div>
+</div></header>
+
+<div class="bar"><div class="wrap">
+  <nav class="navrow" aria-label="章節">
+    <a href="#overview">總覽</a><a href="#apply">報名分析</a><a href="#admit">錄取分析</a><a href="#wait">備取分析</a><a href="#dept">各科部內外招</a><a href="#notes">資料說明</a>
+  </nav>
+  <div class="filters" role="group" aria-label="篩選">
+    <span class="fl">招募類別
+      <span class="seg" id="fType"><button data-v="all" aria-pressed="true">全部</button><button data-v="i" aria-pressed="false">內招</button><button data-v="o" aria-pressed="false">外招</button></span></span>
+    <label class="fl" for="fDept">科部 <select id="fDept"></select></label>
+    <label class="fl" for="fSchool">學校 <select id="fSchool"></select></label>
+    <span class="fl">本院受訓
+      <span class="seg" id="fTrain"><button data-v="all" aria-pressed="true">全部</button><button data-v="y" aria-pressed="false">曾受訓</button><button data-v="n" aria-pressed="false">未曾</button></span></span>
+    <button class="reset" id="fReset" type="button" hidden>清除篩選</button>
+  </div>
+</div></div>
+
+<main><div class="wrap">
+
+<section id="overview">
+  <div class="sec-head"><span class="eyebrow">OVERVIEW</span><h2>總覽</h2>
+    <p class="lede" id="ovLede">以下數字會隨上方篩選即時更新。點選學校或科部的長條也可以直接篩選。</p></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-head"><h3>各階段的本院受訓組成</h3>
+        <div class="legend" id="ovLegend"></div></div>
+      <div class="stack100" id="ovStack"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>本院受訓與錄取結果</h3><p>正取率＝正取 ÷ 報名人次</p></div>
+      <div style="overflow-x:auto"><table class="t" id="ovTable"></table></div>
+    </div>
+  </div>
+  <div class="panel" id="findPanel"><h3>重點發現（全體資料）</h3><div class="findings" id="findings"></div></div>
+</section>
+
+<section id="apply">
+  <div class="sec-head"><span class="eyebrow">01 報名</span><h2>報名分析</h2>
+    <p class="lede">所有報考人次，依畢業學校與是否曾在本院受訓。</p></div>
+  <div id="stage-apply"></div>
+</section>
+
+<section id="admit">
+  <div class="sec-head"><span class="eyebrow">02 錄取</span><h2>錄取分析（正取）</h2>
+    <p class="lede">正取人次，依畢業學校與是否曾在本院受訓。各校同時顯示報名人次，正取率＝正取 ÷ 報名。</p></div>
+  <div id="stage-admit"></div>
+</section>
+
+<section id="wait">
+  <div class="sec-head"><span class="eyebrow">03 備取</span><h2>備取分析</h2>
+    <p class="lede">備取人次，依畢業學校與是否曾在本院受訓。各校同時顯示報名人次，備取率＝備取 ÷ 報名。備取者是正取放棄時的遞補來源。</p></div>
+  <div id="stage-wait"></div>
+</section>
+
+<section id="dept">
+  <div class="sec-head"><span class="eyebrow">04 科部</span><h2>各科部內外招分析</h2>
+    <p class="lede">依招募類別、學校、本院受訓篩選；點選科部可篩選上方各節。</p></div>
+  <div class="panel">
+    <div class="panel-head">
+      <div class="legend"><span class="key"><i class="sw i"></i>內招</span><span class="key"><i class="sw o"></i>外招</span><span class="key"><i class="sw cap"></i>容額</span></div>
+      <span class="seg" id="deptMetric"><button data-v="apply" aria-pressed="false">報名</button><button data-v="A" aria-pressed="true">正取</button><button data-v="W" aria-pressed="false">備取</button></span>
+    </div>
+    <div id="deptChart"></div>
+  </div>
+  <p class="lede" style="max-width:none">上圖一次只看一個指標；下表把每科的容額、內外招的報名／正取／備取並列，供會議逐科對照，順序與上圖相同。報名比＝報名人次 ÷ 容額；達成率＝正取 ÷ 容額；正取中本院受訓＝該科正取者曾任本院 PGY 或曾在本院實習的比例。</p>
+  <div class="tscroll"><table class="dt" id="deptTable"></table></div>
+</section>
+
+<section id="notes">
+  <div class="sec-head"><span class="eyebrow">NOTES</span><h2>資料說明</h2></div>
+  <ul class="notes">
+    <li>資料來源：116年R招募明細（報名）與 116 榜單（115.10.19），經教學部逐筆核對後的報考者名單。網頁只含去識別化欄位，不含姓名與身分證號。</li>
+    <li>計算單位為「人次」：同一人報考兩科會算兩次。報名 216 人次、202 人；正取 59 人次、58 人（1 人同時正取內科部與神經科）。</li>
+    <li>內招者皆為本院 PGY；另有 3 筆外招報名者是本院 PGY（精神科、家醫科），以本院受訓計。</li>
+    <li>內外招合招科部共 3 科：復健科、骨科、放射腫瘤科。報名者中本院 PGY 列內招，其餘列外招。</li>
+    <li>「本院實習」依教學部 UGY 實習名冊（111–113 學年）比對，姓名與畢業學校皆相符者才計入，共 56 人次（50 人）；111 學年以前的實習未納入。</li>
+    <li>本院受訓分四組：本院實習＋PGY、僅本院 PGY、僅本院實習、未曾在本院受訓。</li>
+    <li>PGY 訓練醫院名稱統一：大學附設醫院以大學名稱呈現（例如高醫附院→高雄醫學大學、成大醫院→成功大學），與畢業學校名稱一致。</li>
+    <li>與 115.10.15 統計表的差異：統計表把合招的復健科、骨科全數記為外招，本頁三個合招科部一律依上述方式區分內外招；內科部統計表未計入同時正取神經科的 1 人；放射腫瘤科已依 10/19 榜單列入正取 1 名。</li>
+  </ul>
+</section>
+
+</div></main>
+<footer><div class="wrap">奇美醫院教學部 ・ 116 年度住院醫師招募 ・ 資料截至 115.10.19</div></footer>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const RAW = [[1,"i","內科部","中國醫藥大學",1,1,"A",""],[2,"i","內科部","高雄醫學大學",1,1,"A",""],[3,"i","內科部","高雄醫學大學",1,1,"A",""],[4,"i","內科部","中國醫藥大學",1,1,"A",""],[5,"i","內科部","中山醫學大學",1,0,"A",""],[6,"i","內科部","中山醫學大學",1,1,"A",""],[7,"i","內科部","中國醫藥大學",1,1,"A",""],[8,"i","內科部","國外醫學系",1,0,"A",""],[9,"i","內科部","陽明交通大學",1,1,"A",""],[10,"i","內科部","高雄醫學大學",1,0,"A",""],[11,"o","內科部","慈濟大學",0,0,"A",""],[12,"o","內科部","高雄醫學大學",0,1,"A","嘉義長庚"],[13,"o","內科部","高雄醫學大學",0,0,"A","高醫附院"],[14,"o","內科部","國防醫學院",0,0,"A","高雄榮總"],[15,"o","內科部","高雄醫學大學",0,0,"A","高醫附院"],[3,"i","神經科","高雄醫學大學",1,1,"A",""],[16,"o","神經科","成功大學",0,1,"A","成大醫院"],[17,"o","神經科","中山醫學大學",0,0,"N","基隆長庚"],[18,"i","外科部","中山醫學大學",1,1,"A",""],[19,"i","外科部","長庚大學",1,1,"A",""],[20,"i","外科部","中國醫藥大學",1,0,"A",""],[21,"i","外科部","中山醫學大學",1,0,"W",""],[22,"o","外科部","中山醫學大學",0,1,"A","高雄（未註明）"],[23,"o","外科部","高雄醫學大學",0,0,"A","高醫附院"],[24,"o","外科部","陽明交通大學",0,1,"A","高雄榮總"],[25,"o","外科部","中山醫學大學",0,0,"A",""],[26,"o","外科部","中山醫學大學",0,1,"A","高雄長庚"],[27,"o","外科部","成功大學",0,0,"A","成大醫院"],[28,"o","外科部","成功大學",0,0,"A","成大醫院"],[29,"o","外科部","中山醫學大學",0,1,"A","臺中榮總"],[30,"o","外科部","中山醫學大學",0,0,"A","高雄長庚"],[31,"o","外科部","高雄醫學大學",0,0,"W","高醫附院"],[32,"o","外科部","高雄醫學大學",0,0,"W","高醫附院"],[33,"o","外科部","陽明交通大學",0,0,"W","高醫附院"],[34,"o","外科部","高雄醫學大學",0,0,"W","高醫附院"],[35,"o","外科部","長庚大學",0,0,"W","高雄長庚"],[36,"o","外科部","臺灣大學",0,0,"N","臺大醫院"],[37,"o","外科部","高雄醫學大學",0,0,"N","林口長庚"],[38,"o","外科部","臺北醫學大學",0,0,"N","新光醫院"],[39,"o","外科部","臺北醫學大學",0,0,"N","成大醫院"],[40,"o","外科部","臺北醫學大學",0,0,"N","高雄長庚"],[41,"o","外科部","臺灣大學",0,0,"N","臺大醫院"],[42,"o","外科部","中國醫藥大學",0,0,"N","中國醫藥大學附設醫院"],[43,"o","外科部","慈濟大學",0,0,"N","新光醫院"],[44,"i","復健科","國防醫學院",1,1,"W",""],[45,"i","復健科","中國醫藥大學",1,0,"W",""],[46,"o","復健科","高雄醫學大學",0,1,"A","高雄長庚"],[47,"o","復健科","高雄醫學大學",0,0,"W","高醫附院"],[48,"o","復健科","成功大學",0,0,"W","成大醫院"],[49,"o","復健科","成功大學",0,0,"W","高醫附院"],[50,"o","復健科","成功大學",0,0,"W","臺中榮總"],[51,"o","復健科","高雄醫學大學",0,0,"W","高醫附院"],[52,"o","復健科","中國醫藥大學",0,0,"W","雙和醫院"],[53,"o","復健科","臺北醫學大學",0,0,"W","萬芳醫院"],[54,"o","復健科","中山醫學大學",0,1,"W","林口長庚"],[55,"o","復健科","臺北醫學大學",0,0,"W","萬芳醫院"],[56,"o","復健科","高雄醫學大學",0,0,"N","亞東醫院"],[57,"o","復健科","中山醫學大學",0,0,"N","臺中榮總"],[58,"o","復健科","國防醫學院",0,0,"N","臺北榮總"],[16,"o","復健科","成功大學",0,1,"N","成大醫院"],[59,"o","復健科","成功大學",0,0,"N","成大醫院"],[60,"o","復健科","輔仁大學",0,0,"N","臺北榮總"],[61,"o","復健科","臺灣大學",0,0,"N","臺大醫院"],[62,"o","復健科","陽明交通大學",0,1,"N","臺北榮總"],[63,"o","復健科","臺北醫學大學",0,0,"N","萬芳醫院"],[64,"o","復健科","陽明交通大學",0,1,"N","高雄榮總"],[65,"o","復健科","臺灣大學",0,0,"N","臺大醫院"],[66,"o","復健科","中山醫學大學",0,0,"N","雙和醫院"],[67,"o","復健科","長庚大學",0,0,"N","高雄榮總"],[68,"o","復健科","臺北醫學大學",0,0,"N",""],[69,"o","復健科","臺北醫學大學",0,0,"N","北醫附院"],[70,"o","復健科","國防醫學院",0,0,"N","高雄榮總"],[71,"o","復健科","中國醫藥大學",0,0,"N","中國醫藥大學附設醫院"],[72,"i","放射診斷科","中山醫學大學",1,1,"A",""],[73,"i","放射診斷科","慈濟大學",1,0,"A",""],[74,"i","放射診斷科","成功大學",1,0,"W",""],[75,"i","放射診斷科","臺北醫學大學",1,0,"W",""],[76,"o","放射診斷科","長庚大學",0,0,"A","高雄榮總"],[77,"o","放射診斷科","高雄醫學大學",0,1,"W","國泰醫院"],[78,"o","放射診斷科","中國醫藥大學",0,0,"W","成大醫院"],[79,"o","放射診斷科","臺北醫學大學",0,0,"W","嘉義長庚"],[80,"o","放射診斷科","陽明交通大學",0,0,"W","彰化基督教醫院"],[81,"o","放射診斷科","成功大學",0,0,"W","成大醫院"],[82,"o","放射診斷科","國防醫學院",0,0,"W","嘉義長庚"],[83,"o","放射診斷科","高雄醫學大學",0,0,"W","高醫附院"],[84,"o","放射診斷科","國外醫學系",0,0,"N","基隆長庚"],[85,"i","放射腫瘤科","中國醫藥大學",1,1,"A",""],[78,"o","放射腫瘤科","中國醫藥大學",0,0,"W","成大醫院"],[86,"o","放射腫瘤科","長庚大學",0,0,"W","基隆長庚"],[87,"i","解剖病理科","中山醫學大學",1,0,"A",""],[88,"o","解剖病理科","中國醫藥大學",0,0,"N","彰化基督教醫院"],[89,"o","解剖病理科","馬偕醫學院",0,1,"N","高雄榮總"],[90,"i","婦產科","中國醫藥大學",1,0,"A",""],[91,"i","婦產科","輔仁大學",1,1,"A",""],[92,"i","婦產科","中國醫藥大學",1,1,"A",""],[93,"i","小兒科","國外醫學系",1,0,"A",""],[94,"i","小兒科","國外醫學系",1,0,"A",""],[95,"i","小兒科","中山醫學大學",1,0,"A",""],[96,"o","小兒科","國外醫學系",0,0,"A",""],[97,"o","小兒科","中山醫學大學",0,1,"A","臺大雲林分院"],[98,"i","家庭醫學科","馬偕醫學院",1,0,"A",""],[99,"i","家庭醫學科","中國醫藥大學",1,0,"A",""],[100,"i","家庭醫學科","陽明交通大學",1,1,"A",""],[74,"i","家庭醫學科","成功大學",1,0,"N",""],[101,"i","家庭醫學科","義守大學",1,0,"N",""],[102,"i","家庭醫學科","中國醫藥大學",1,1,"W",""],[103,"o","家庭醫學科","高雄醫學大學",0,0,"A","高雄長庚"],[102,"o","家庭醫學科","中國醫藥大學",1,1,"N",""],[45,"o","家庭醫學科","中國醫藥大學",1,0,"W",""],[104,"o","家庭醫學科","高雄醫學大學",0,1,"W","成大醫院"],[105,"o","家庭醫學科","高雄醫學大學",0,0,"W","高醫附院"],[106,"o","家庭醫學科","中國醫藥大學",0,0,"W","中國醫藥大學附設醫院"],[107,"o","家庭醫學科","長庚大學",0,0,"W","高雄長庚"],[108,"o","家庭醫學科","成功大學",0,0,"N","成大醫院"],[109,"o","家庭醫學科","中國醫藥大學",0,1,"N","中國醫藥大學附設醫院"],[110,"o","家庭醫學科","成功大學",0,1,"N","成大醫院"],[111,"o","家庭醫學科","高雄醫學大學",0,0,"N","高雄長庚"],[11,"o","家庭醫學科","慈濟大學",0,0,"N",""],[112,"o","家庭醫學科","高雄醫學大學",0,0,"N","高雄長庚"],[113,"o","家庭醫學科","成功大學",0,0,"N",""],[114,"o","家庭醫學科","高雄醫學大學",0,0,"N","高雄長庚"],[115,"o","家庭醫學科","長庚大學",0,0,"N","新光醫院"],[116,"o","家庭醫學科","長庚大學",0,0,"N","高雄長庚"],[117,"o","家庭醫學科","輔仁大學",0,0,"N","義大醫院"],[118,"o","家庭醫學科","高雄醫學大學",0,0,"N","高醫附院"],[119,"o","家庭醫學科","中山醫學大學",0,0,"N","亞東醫院"],[120,"o","家庭醫學科","高雄醫學大學",0,0,"N","高醫附院"],[121,"o","家庭醫學科","臺北醫學大學",0,0,"N","高雄長庚"],[122,"o","家庭醫學科","中山醫學大學",0,1,"N","高雄榮總"],[123,"o","家庭醫學科","國外醫學系",0,0,"N","慈濟醫院"],[124,"o","家庭醫學科","臺北醫學大學",0,0,"N","北醫附院"],[125,"o","家庭醫學科","陽明交通大學",0,1,"N","高雄榮總"],[126,"o","家庭醫學科","中國醫藥大學",0,0,"N","高雄榮總"],[127,"o","家庭醫學科","臺北醫學大學",0,1,"N","臺北"],[128,"o","家庭醫學科","中國醫藥大學",0,0,"N",""],[129,"i","精神科","中國醫藥大學",1,0,"N",""],[75,"i","精神科","臺北醫學大學",1,0,"N",""],[129,"o","精神科","中國醫藥大學",1,0,"A",""],[130,"o","精神科","高雄醫學大學",0,0,"W","高醫附院"],[131,"o","精神科","高雄醫學大學",0,1,"W","高醫附院"],[132,"o","精神科","中國醫藥大學",0,0,"W","嘉義長庚"],[133,"o","精神科","長庚大學",0,0,"W","馬偕醫院"],[134,"o","精神科","中山醫學大學",0,0,"N","慈濟醫院"],[135,"i","急診醫學科","中山醫學大學",1,1,"A",""],[136,"i","急診醫學科","臺北醫學大學",1,0,"A",""],[101,"i","急診醫學科","義守大學",1,0,"A",""],[137,"i","急診醫學科","中國醫藥大學",1,1,"W",""],[138,"i","急診醫學科","陽明交通大學",1,1,"W",""],[139,"i","急診醫學科","中國醫藥大學",1,0,"W",""],[140,"i","急診醫學科","長庚大學",1,0,"W",""],[141,"o","急診醫學科","長庚大學",0,0,"A","林口長庚"],[142,"o","急診醫學科","臺北醫學大學",0,0,"A","北醫附院"],[143,"o","急診醫學科","高雄醫學大學",0,0,"W","高醫附院"],[144,"o","急診醫學科","國外醫學系",0,0,"W","基隆長庚"],[145,"o","急診醫學科","臺灣大學",0,0,"W","林口長庚"],[146,"o","急診醫學科","長庚大學",0,1,"W","嘉義長庚"],[147,"o","急診醫學科","高雄醫學大學",0,1,"W","高醫附院"],[148,"o","急診醫學科","中山醫學大學",0,0,"W","中國醫藥大學附設醫院"],[149,"o","急診醫學科","中山醫學大學",0,1,"W","彰化基督教醫院"],[150,"o","急診醫學科","成功大學",0,0,"N","彰化基督教醫院"],[151,"i","麻醉科","高雄醫學大學",1,0,"A",""],[152,"i","麻醉科","臺北醫學大學",1,0,"W",""],[153,"o","麻醉科","國防醫學院",0,0,"A","高雄榮總"],[154,"o","麻醉科","國防醫學院",0,0,"A","高雄榮總"],[155,"o","麻醉科","中山醫學大學",0,1,"W","林口長庚"],[156,"o","麻醉科","成功大學",0,0,"W","成大醫院"],[157,"o","麻醉科","中山醫學大學",0,0,"W","彰化基督教醫院"],[158,"o","麻醉科","成功大學",0,0,"W","成大醫院"],[159,"o","麻醉科","中國醫藥大學",0,0,"N","高雄長庚"],[160,"o","麻醉科","高雄醫學大學",0,0,"N","高雄榮總"],[161,"o","麻醉科","臺北醫學大學",0,0,"N","北醫附院"],[162,"o","麻醉科","慈濟大學",0,0,"N","成大醫院"],[163,"o","麻醉科","高雄醫學大學",0,0,"N","高醫附院"],[164,"o","麻醉科","高雄醫學大學",0,0,"N","高醫附院"],[165,"o","麻醉科","長庚大學",0,0,"N","高雄長庚"],[166,"o","麻醉科","成功大學",0,0,"N","成大醫院"],[167,"o","麻醉科","高雄醫學大學",0,0,"N","高醫附院"],[168,"o","麻醉科","臺北醫學大學",0,0,"N","萬芳醫院"],[169,"o","麻醉科","中山醫學大學",0,0,"N","高雄榮總"],[170,"o","麻醉科","長庚大學",0,0,"N","高雄長庚"],[171,"o","麻醉科","中山醫學大學",0,1,"N","林口長庚"],[172,"o","麻醉科","輔仁大學",0,0,"N",""],[173,"o","麻醉科","國外醫學系",0,0,"N","成大醫院"],[174,"o","麻醉科","高雄醫學大學",0,1,"N",""],[175,"o","麻醉科","中山醫學大學",0,0,"N","嘉基"],[176,"o","麻醉科","高雄醫學大學",0,0,"N","北醫附院"],[177,"o","麻醉科","高雄醫學大學",0,0,"N",""],[178,"o","麻醉科","中國醫藥大學",0,0,"N","高雄榮總"],[146,"o","麻醉科","長庚大學",0,1,"N","嘉義長庚"],[179,"o","麻醉科","臺北醫學大學",0,0,"N","成大醫院"],[180,"o","麻醉科","高雄醫學大學",0,0,"N","馬偕醫院"],[181,"o","麻醉科","長庚大學",0,0,"N","臺中榮總"],[182,"o","麻醉科","長庚大學",0,0,"N","臺中榮總"],[183,"o","麻醉科","中山醫學大學",0,1,"N","中山"],[184,"o","麻醉科","國防醫學院",0,0,"N","萬芳醫院"],[185,"o","麻醉科","臺北醫學大學",0,0,"N","北醫附院"],[186,"o","麻醉科","中山醫學大學",0,0,"N",""],[187,"i","耳鼻喉科","陽明交通大學",1,1,"A",""],[188,"i","耳鼻喉科","高雄醫學大學",1,0,"W",""],[189,"i","骨科","中山醫學大學",1,1,"A",""],[190,"i","骨科","輔仁大學",1,1,"W",""],[191,"o","骨科","成功大學",0,0,"A","臺大醫院"],[192,"o","骨科","長庚大學",0,0,"W","林口長庚"],[193,"o","骨科","成功大學",0,0,"W","成大醫院"],[194,"o","骨科","臺北醫學大學",0,0,"W","高雄長庚"],[195,"o","骨科","中山醫學大學",0,1,"W","馬偕醫院"],[196,"o","骨科","長庚大學",0,0,"N","高雄長庚"],[197,"o","骨科","高雄醫學大學",0,0,"N","義大醫院"],[64,"o","骨科","陽明交通大學",0,1,"N","高雄榮總"],[198,"o","骨科","陽明交通大學",0,0,"N","臺北榮總"],[79,"o","骨科","臺北醫學大學",0,0,"N","嘉義長庚"],[26,"o","骨科","中山醫學大學",0,1,"N","高雄長庚"],[199,"o","骨科","中山醫學大學",0,0,"N","義大醫院"],[200,"o","骨科","臺北醫學大學",0,0,"N","高雄長庚"],[201,"o","骨科","慈濟大學",0,0,"N","成大醫院"],[202,"o","骨科","臺灣大學",0,0,"N","成大醫院"]];
+const CAP = {"內科部":13,"神經科":2,"外科部":12,"復健科":1,"放射診斷科":3,"放射腫瘤科":1,"解剖病理科":1,"婦產科":3,"小兒科":2,"家庭醫學科":4,"精神科":1,"急診醫學科":5,"麻醉科":3,"耳鼻喉科":1,"骨科":2};
+const DEPTS = Object.keys(CAP);
+const TRANSFER = {"放射腫瘤科":1};
+const HOSP = {"成大醫院":"成功大學","高醫附院":"高雄醫學大學","北醫附院":"臺北醫學大學","臺大醫院":"臺灣大學","中國醫藥大學附設醫院":"中國醫藥大學","臺大雲林分院":"臺灣大學雲林分院","嘉基":"嘉義基督教醫院","中山":"中山醫學大學","臺北":"臺北（未註明）"};
+const ROWS = RAW.map(([id,t,d,s,pgy,ci,r,h])=>({id,t,d,s,r,h:HOSP[h]||h,pgy,g: pgy?(ci?"a":"p"):(ci?"b":"c")}));
+const SCHOOLS = [...new Set(ROWS.map(r=>r.s))].sort((a,b)=>ROWS.filter(r=>r.s===b).length-ROWS.filter(r=>r.s===a).length);
+const GL = {a:"本院實習＋PGY", p:"僅本院 PGY", b:"僅本院實習", c:"未曾在本院受訓"};
+const STAGE = {apply:{label:"報名",f:()=>true}, A:{label:"正取",f:r=>r.r==="A"}, W:{label:"備取",f:r=>r.r==="W"}};
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const P = (a,b)=> b? (a/b*100).toFixed(1)+"%" : "—";
+const P0 = (a,b)=> b? Math.round(a/b*100)+"%" : "—";
+
+/* ---------- state ---------- */
+const st = {t:"all", d:"all", s:"all", g:"all"};
+const modes = {apply:"g", A:"g", W:"g"};
+let deptMetric = "A";
+try{ const v=JSON.parse(localStorage.getItem("rr116-v2")||"null"); if(v){ Object.assign(st,v.st||{}); Object.assign(modes,v.modes||{}); deptMetric=v.dm||deptMetric; } }catch(e){}
+function save(){ try{ localStorage.setItem("rr116-v2",JSON.stringify({st,modes,dm:deptMetric})); }catch(e){} }
+const pass = (r,skip={}) => (st.t==="all"||r.t===st.t) && (skip.d||st.d==="all"||r.d===st.d) && (skip.s||st.s==="all"||r.s===st.s) && (st.g==="all"||(st.g==="y"?r.g!=="c":r.g==="c"));
+const rowsF = (skip) => ROWS.filter(r=>pass(r,skip));
+
+/* ---------- tooltip ---------- */
+const tip=document.getElementById("tip");
+function showTip(e,html){ tip.innerHTML=html; tip.classList.add("on");
+  tip.style.left=Math.min(e.clientX+14, innerWidth-tip.offsetWidth-8)+"px"; tip.style.top=Math.min(e.clientY+14, innerHeight-tip.offsetHeight-8)+"px"; }
+document.addEventListener("pointermove",e=>{ const t=e.target.closest("[data-tip]"); if(t) showTip(e,t.dataset.tip); else tip.classList.remove("on"); });
+
+/* ---------- bar helpers ---------- */
+function niceMax(m){ if(m<=0) return 1; const p=10**Math.floor(Math.log10(m)); for(const k of [1,2,2.5,5,10]) if(k*p>=m) return k*p; return 10*p; }
+function ticks(max){ const step=niceMax(max/4); const t=[]; for(let x=0;x<=max+1e-9;x+=step) t.push(+x.toFixed(3)); return t; }
+function axis(max){ return `<div class="axis" aria-hidden="true"><span></span><div class="ticks">${ticks(max).map(t=>`<span style="left:${t/max*100}%">${t}</span>`).join("")}</div><span></span></div>`; }
+// items: {name, parts:[[key,color,label,n]], label, cap?, click?, sel?, dim?}
+function bars(items,max){
+  if(!items.length) return `<p class="empty">目前篩選條件下沒有資料。</p>`;
+  return axis(max)+`<div class="bars">`+items.map(it=>{
+    let left=0; const nz=it.parts.filter(p=>p[3]>0);
+    const inner = nz.map((p,ix)=>{ const w=p[3]/max*100; const h=`<i class="s ${ix===nz.length-1?'end':''}" style="left:${left/max*100}%;width:${w}%;background:var(${p[1]})" data-tip="${esc(it.name)}｜${p[2]} <b>${p[3]}</b>"></i>`; left+=p[3]; return h; }).join("");
+    const ghost = it.ghost!=null ? `<span class="ghost" style="width:${it.ghost/max*100}%" data-tip="${esc(it.name)}｜報名 <b>${it.ghost}</b> 人次"></span>` : "";
+    const capm = it.cap!=null ? `<span class="capm" style="left:${Math.min(it.cap/max,1)*100}%" data-tip="容額 ${it.cap}"></span>` : "";
+    const cls = ["brow", it.click?"click":"", it.sel?"sel":"", it.dim?"dim":""].join(" ");
+    const attrs = it.click ? ` tabindex="0" role="button" data-${it.click[0]}="${esc(it.click[1])}" aria-label="篩選 ${esc(it.name)}"` : "";
+    return `<div class="${cls}"${attrs}><span class="name" title="${esc(it.name)}">${esc(it.name)}</span><div class="track">${ghost}${inner}${capm}</div><span class="val">${it.label}</span></div>`;
+  }).join("")+`</div>`;
+}
+const PARTS = {
+  g: (rs)=>["a","p","b","c"].map(k=>[k,"--g"+k,GL[k],rs.filter(r=>r.g===k).length]),
+  t: (rs)=>[["i","--in","內招",rs.filter(r=>r.t==="i").length],["o","--out","外招",rs.filter(r=>r.t==="o").length]],
+};
+const legendG = ["a","p","b","c"].map(k=>`<span class="key"><i class="sw ${k}"></i>${GL[k]}</span>`).join("");
+const legendT = `<span class="key"><i class="sw i"></i>內招</span><span class="key"><i class="sw o"></i>外招</span>`;
+
+/* ---------- overview ---------- */
+function renderOverview(){
+  const all=rowsF(), ppl=new Set(all.map(r=>r.id)).size;
+  const A=all.filter(STAGE.A.f), W=all.filter(STAGE.W.f), N=all.filter(r=>r.r==="N");
+  const tr = rs=> rs.filter(r=>r.g!=="c").length;
+  document.getElementById("kpis").innerHTML = [
+    ["報名", all.length, `${ppl} 人・本院受訓 ${P0(tr(all),all.length)}`],
+    ["正取", A.length, `正取率 ${P(A.length,all.length)}（正取 ${A.length}÷報名 ${all.length}）・本院受訓 ${P0(tr(A),A.length)}`],
+    ["備取", W.length, `本院受訓 ${P0(tr(W),W.length)}`],
+    ["未錄取", N.length, `本院受訓 ${P0(tr(N),N.length)}`]
+  ].map(([k,v,s])=>`<div class="kpi"><span class="k">${k}（人次）</span><span class="v num">${v}</span><span class="s">${s}</span></div>`).join("");
+
+  document.getElementById("ovStack").innerHTML = [["報名",all],["正取",A],["備取",W]].map(([lab,rs])=>{
+    const n=rs.length; const segs=["a","p","b","c"].map(g=>[g,rs.filter(r=>r.g===g).length]).filter(x=>x[1]);
+    return `<div class="srow"><span>${lab}</span><div class="strack">${n?segs.map(([g,c])=>`<i class="${g}" style="flex:${c};background:var(--g${g})" data-tip="${lab}｜${GL[g]} ${c} 人次（${P(c,n)}）">${c/n>=.12?P0(c,n):""}</i>`).join(""):""}</div><span class="val num">${n} 人次</span></div>`;
+  }).join("");
+
+  const grp = ["a","p","b","c"].map(g=>{ const rs=all.filter(r=>r.g===g); return [g,rs.length,rs.filter(STAGE.A.f).length,rs.filter(STAGE.W.f).length]; });
+  const tot=[all.length,A.length,W.length];
+  document.getElementById("ovTable").innerHTML = `<thead><tr><th>本院受訓</th><th>報名</th><th>正取</th><th>正取率<br><span style="font-weight:400">正取÷該組報名</span></th><th>備取</th><th>備取率<br><span style="font-weight:400">備取÷該組報名</span></th></tr></thead><tbody>`+
+    grp.map(([g,n,a,w])=>`<tr><td><span class="key"><i class="sw ${g}"></i>${GL[g]}</span></td><td class="num">${n}</td><td class="num">${a}</td><td class="num big">${P(a,n)}</td><td class="num">${w}</td><td class="num">${P(w,n)}</td></tr>`).join("")+
+    `<tr class="tot"><td>合計</td><td class="num">${tot[0]}</td><td class="num">${tot[1]}</td><td class="num">${P(tot[1],tot[0])}</td><td class="num">${tot[2]}</td><td class="num">${P(tot[2],tot[0])}</td></tr></tbody>`;
+
+  const filtered = st.t!=="all"||st.d!=="all"||st.s!=="all"||st.g!=="all";
+  document.getElementById("findPanel").hidden = filtered;
+}
+const FIND = [
+  ["報名","報名 216 人次（202 人），外招 166、內招 50。曾在本院受訓（PGY 或實習）的有 85 人次，占 39%；其中外招報名者有 32 人次曾在本院實習。"],
+  ["錄取","正取 59 人次中，曾在本院受訓的有 42 人次（71%）。各組正取率＝該組正取人次 ÷ 該組報名人次，分母是各組自己的報名人數（四組合計 216）：本院實習＋PGY 75%（報名 24、正取 18）、僅本院 PGY 55%（報名 29、正取 16）、僅本院實習 25%（報名 32、正取 8）、未曾受訓 13%（報名 131、正取 17）。"],
+  ["實習","在本院實習過的效果明顯：內招正取 33 人中有 18 人也在本院實習過；外招正取 26 人中有 8 人曾在本院實習，外招實習生的正取率 25%（正取 8÷報名 32），是未曾受訓者 13%（正取 17÷報名 131）的約 2 倍。"],
+  ["學校","報名最多的是高醫 41、中山 34、中國醫 29、北醫 24。中山 34 人次中有 21 人次曾在本院受訓，比例最高；北醫報名 24 只正取 2（正取率 8%），臺大報名 6 未有正取。"],
+  ["備取","備取 60 人次，62% 未曾在本院受訓。正取放棄時的遞補來源以外院人才為主。"]
+];
+
+/* ---------- stage sections ---------- */
+function renderStage(key, el){
+  const S=STAGE[key], base=rowsF({s:true}), rs=base.filter(S.f);
+  const mode=modes[key];
+  const by={}; base.forEach(r=>{ (by[r.s] ||= {all:[],st:[]}).all.push(r); if(S.f(r)) by[r.s].st.push(r); });
+  const list=SCHOOLS.filter(s=>by[s]&&by[s].st.length).sort((a,b)=>by[b].st.length-by[a].st.length||by[b].all.length-by[a].all.length);
+  const max=niceMax(Math.max(1,...list.map(s=>key==="apply"?by[s].st.length:by[s].all.length))*1.04);
+  const items=list.map(s=>{ const x=by[s]; return {name:s, parts:PARTS[mode](x.st), ghost: key==="apply"?null:x.all.length, click:["school",s], sel:st.s===s, dim:st.s!=="all"&&st.s!==s,
+    label: key==="apply" ? `<b class="num">${x.st.length}</b> <span class="na">${P0(x.st.filter(r=>r.g!=="c").length,x.st.length)} 受訓</span>` : `<b class="num">${x.st.length}</b><span class="na num">／${x.all.length}・${P0(x.st.length,x.all.length)}</span>`}; });
+  const cur = rowsF().filter(S.f);
+  const tbl = ["a","p","b","c"].map(g=>{ const i=cur.filter(r=>r.g===g&&r.t==="i").length, o=cur.filter(r=>r.g===g&&r.t==="o").length; return [g,i,o]; });
+  const ti=cur.filter(r=>r.t==="i").length, to=cur.filter(r=>r.t==="o").length, n=cur.length;
+  let side = `<div class="panel"><div class="panel-head"><h3>本院受訓 × 內外招</h3><p>${S.label} ${n} 人次</p></div>
+    <div style="overflow-x:auto"><table class="t"><thead><tr><th></th><th><span class="key" style="justify-content:flex-end"><i class="sw i"></i>內招</span></th><th><span class="key" style="justify-content:flex-end"><i class="sw o"></i>外招</span></th><th>合計</th><th>占比</th></tr></thead><tbody>`+
+    tbl.map(([g,i,o])=>`<tr><td><span class="key"><i class="sw ${g}"></i>${GL[g]}</span></td><td class="num">${i}</td><td class="num">${o}</td><td class="num big">${i+o}</td><td class="num">${P(i+o,n)}</td></tr>`).join("")+
+    `<tr class="tot"><td>合計</td><td class="num">${ti}</td><td class="num">${to}</td><td class="num">${n}</td><td class="num">${n?"100%":"—"}</td></tr></tbody></table></div>`;
+  if(key!=="apply"){
+    const all=rowsF(); side += `<p style="font-size:.84rem;color:var(--ink2)">各組${S.label}率（${S.label}人次÷該組報名人次）：${["a","p","b","c"].map(k=>`${GL[k]} ${P(cur.filter(r=>r.g===k).length, all.filter(r=>r.g===k).length)}（${cur.filter(r=>r.g===k).length}／${all.filter(r=>r.g===k).length}）`).join("・")}</p>`;
+  }
+  side += `</div>`;
+  if(key==="apply"){
+    const hp={}; cur.filter(r=>!r.pgy&&r.h).forEach(r=>{ const o=hp[r.h] ||= {n:0,a:0}; o.n++; if(r.r==="A") o.a++; });
+    const npg=cur.filter(r=>!r.pgy), miss=npg.filter(r=>!r.h).length, vague=npg.filter(r=>/未註明/.test(r.h)).length;
+    const hl=Object.entries(hp).sort((a,b)=>b[1].n-a[1].n).slice(0,10);
+    side += `<div class="panel"><div class="panel-head"><h3>外院 PGY 報名者的訓練醫院</h3><p>前 10 名</p></div><p style="font-size:.85rem;color:var(--ink2)">報名者中不是本院 PGY 的人，依其 PGY 訓練醫院統計；可看出哪些醫院的 PGY 最常來報考，即主要的人才競爭醫院。數字為報名人次，後面為其中正取人次。</p><p style="font-size:.85rem;color:var(--ink2)">非本院 PGY 報名者共 <b class="num">${npg.length}</b> 人次，其中 <b class="num">${miss}</b> 人次報名資料未填 PGY 訓練醫院，不列入本圖${vague?`；另 ${vague} 人次只寫地區（列為「未註明」）`:''}。</p>`+
+      bars(hl.map(([h,o])=>({name:h, parts:[["n","--out","報名",o.n]], label:`<b class="num">${o.n}</b> <span class="na">人次・正取 ${o.a}</span>`})), niceMax(Math.max(1,...hl.map(x=>x[1].n))*1.04))+`</div>`;
+  }
+  el.innerHTML = `<div class="grid-wide"><div class="panel"><div class="panel-head"><h3>各校${S.label}人次</h3>
+      <span class="seg" data-mode="${key}"><button data-v="g" aria-pressed="${mode==="g"}">依本院受訓</button><button data-v="t" aria-pressed="${mode==="t"}">依內外招</button></span></div>
+      <div class="legend">${mode==="g"?legendG:legendT}${key==="apply"?"":`<span class="key"><i class="sw" style="border:1.5px dashed var(--muted);width:14px"></i>報名人次</span>`}</div>${key==="apply"?"":`<p style="font-size:.84rem;color:var(--ink2)">虛線框為該校報名人次，實心為${S.label}人次；右側為「${S.label}／報名・${S.label}率」。</p>`}${bars(items,max)}</div><div style="display:grid;gap:16px">${side}</div></div>`;
+}
+
+/* ---------- dept ---------- */
+function renderDept(){
+  const base=rowsF({d:true}); const S=STAGE[deptMetric];
+  const by=d=>base.filter(r=>r.d===d);
+  const vals=DEPTS.map(d=>{ const rs=by(d).filter(S.f); return {d, i:rs.filter(r=>r.t==="i").length, o:rs.filter(r=>r.t==="o").length}; });
+  const sorted=[...vals].sort((a,b)=>(b.i+b.o)-(a.i+a.o)||CAP[b.d]-CAP[a.d]);
+  const max=niceMax(Math.max(1,...vals.map(v=>v.i+v.o), ...(deptMetric==="A"?DEPTS.map(d=>CAP[d]):[]))*1.04);
+  document.getElementById("deptChart").innerHTML = bars(sorted.map(v=>{ const n=v.i+v.o, cap=CAP[v.d];
+    let lab=`<b class="num">${n}</b>`;
+    if(deptMetric==="apply") lab+=` <span class="na num">比 ${(n/cap).toFixed(1)}</span>`;
+    if(deptMetric==="A") lab+= n>cap?` <span class="chip c-warn">+${n-cap}</span>`: n<cap?` <span class="chip c-bad">${n-cap}</span>`:` <span class="chip c-good">足額</span>`;
+    return {name:v.d, parts:[["i","--in","內招",v.i],["o","--out","外招",v.o]], cap: deptMetric==="A"?cap:null, label:lab, click:["dept",v.d], sel:st.d===v.d, dim:st.d!=="all"&&st.d!==v.d}; }), max);
+
+  const c=(rs,t,f)=>rs.filter(r=>r.t===t&&f(r)).length;
+  let T=[0,0,0,0,0,0,0];
+  let h=`<thead><tr><th rowspan="2">科部</th><th rowspan="2">容額</th><th colspan="3" class="bl gi">內招</th><th colspan="3" class="bl go">外招</th><th colspan="3" class="bl">合計</th><th rowspan="2" class="bl">正取中<br>本院受訓</th></tr>
+    <tr><th class="bl">報名</th><th>正取</th><th>備取</th><th class="bl">報名</th><th>正取</th><th>備取</th><th class="bl">報名比</th><th>正取</th><th>達成率</th></tr></thead><tbody>`;
+  for(const d of sorted.map(v=>v.d)){
+    const rs=by(d); const v=[c(rs,"i",()=>true),c(rs,"i",STAGE.A.f),c(rs,"i",STAGE.W.f),c(rs,"o",()=>true),c(rs,"o",STAGE.A.f),c(rs,"o",STAGE.W.f)];
+    const A=rs.filter(STAGE.A.f), tr=A.filter(r=>r.g!=="c").length;
+    v.forEach((x,i)=>T[i]+=x); T[6]+=tr;
+    h+=`<tr data-dept="${esc(d)}" tabindex="0" class="${st.d===d?'sel':''}"><td>${esc(d)}${TRANSFER[d]?` <span class="chip c-warn" data-tip="正取 ${TRANSFER[d]} 名為本院住院醫師轉任（原為本院 PGY），計入內招正取並占容額">含R轉任 ${TRANSFER[d]}</span>`:""}</td><td class="num">${CAP[d]}</td>${v.map((x,i)=>`<td class="num ${i%3===0?'bl':''}">${x||'<span class="na">0</span>'}</td>`).join("")}
+      <td class="num bl">${((v[0]+v[3])/CAP[d]).toFixed(1)}</td><td class="num">${v[1]+v[4]}</td><td class="num">${P0(v[1]+v[4],CAP[d])}</td><td class="num bl">${A.length?P0(tr,A.length):'—'}</td></tr>`;
+  }
+  const capT=DEPTS.reduce((a,d)=>a+CAP[d],0);
+  h+=`<tr class="tot"><td>合計</td><td class="num">${capT}</td>${T.slice(0,6).map((x,i)=>`<td class="num ${i%3===0?'bl':''}">${x}</td>`).join("")}<td class="num bl">${((T[0]+T[3])/capT).toFixed(1)}</td><td class="num">${T[1]+T[4]}</td><td class="num">${P0(T[1]+T[4],capT)}</td><td class="num bl">${P0(T[6],T[1]+T[4])}</td></tr></tbody>`;
+  document.getElementById("deptTable").innerHTML=h;
+}
+
+/* ---------- wiring ---------- */
+function syncControls(){
+  document.querySelectorAll("#fType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===st.t));
+  document.querySelectorAll("#fTrain button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===st.g));
+  document.querySelectorAll("#deptMetric button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===deptMetric));
+  document.getElementById("fDept").value=st.d; document.getElementById("fSchool").value=st.s;
+  document.getElementById("fReset").hidden = st.t==="all"&&st.d==="all"&&st.s==="all"&&st.g==="all";
+  const parts=[]; if(st.t!=="all") parts.push(st.t==="i"?"內招":"外招"); if(st.d!=="all") parts.push(st.d); if(st.s!=="all") parts.push(st.s); if(st.g!=="all") parts.push(st.g==="y"?"曾在本院受訓":"未曾在本院受訓");
+  document.getElementById("ovLede").innerHTML = parts.length ? `目前篩選：<b>${parts.map(esc).join("・")}</b>。點「清除篩選」回到全體資料。` : "以下數字會隨上方篩選即時更新。點選學校或科部的長條也可以直接篩選。";
+}
+function render(){ syncControls(); renderOverview(); renderStage("apply",document.getElementById("stage-apply")); renderStage("A",document.getElementById("stage-admit")); renderStage("W",document.getElementById("stage-wait")); renderDept(); save(); }
+
+document.getElementById("fDept").innerHTML = `<option value="all">全部科部</option>`+DEPTS.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join("");
+document.getElementById("fSchool").innerHTML = `<option value="all">全部學校</option>`+SCHOOLS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+document.getElementById("ovLegend").innerHTML = legendG;
+document.getElementById("findings").innerHTML = FIND.map(([k,t])=>`<div class="finding"><span class="tag">${k}</span><p>${t}</p></div>`).join("");
+document.getElementById("fType").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b){ st.t=b.dataset.v; render(); }});
+document.getElementById("fTrain").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b){ st.g=b.dataset.v; render(); }});
+document.getElementById("deptMetric").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b){ deptMetric=b.dataset.v; render(); }});
+document.getElementById("fDept").addEventListener("change",e=>{ st.d=e.target.value; render(); });
+document.getElementById("fSchool").addEventListener("change",e=>{ st.s=e.target.value; render(); });
+document.getElementById("fReset").addEventListener("click",()=>{ Object.assign(st,{t:"all",d:"all",s:"all",g:"all"}); render(); });
+function pick(el){
+  const m=el.closest("[data-mode] button"); if(m){ modes[m.parentElement.dataset.mode]=m.dataset.v; render(); return; }
+  const s=el.closest("[data-school]"); if(s){ st.s = st.s===s.dataset.school ? "all" : s.dataset.school; render(); return; }
+  const d=el.closest("[data-dept]"); if(d){ st.d = st.d===d.dataset.dept ? "all" : d.dataset.dept; render(); }
+}
+document.querySelector("main").addEventListener("click",e=>pick(e.target));
+document.querySelector("main").addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-school],[data-dept]")){ e.preventDefault(); pick(e.target); }});
+if(!DEPTS.includes(st.d)) st.d="all"; if(!SCHOOLS.includes(st.s)) st.s="all";
+render();
+</script>
