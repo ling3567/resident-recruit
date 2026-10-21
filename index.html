@@ -161,16 +161,27 @@ ul.notes{margin:0;padding-left:1.2em;color:var(--ink2);font-size:.88rem;display:
 footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line)}
 footer .wrap{padding-block:18px 28px}
 @media (max-width:560px){
-  html{font-size:18px}
-  .brow,.axis{grid-template-columns:6.3em minmax(0,1fr) 5.4em;gap:6px}
-  .brow{font-size:.84rem} .brow .val{font-size:.78rem}
-  .axis{font-size:.74rem}
+  html{font-size:16px}
+  :root{--fs:.95rem}
+  body{font-size:var(--fs)}
+  h1{font-size:1.7rem} h2{font-size:1.5rem} h3{font-size:1.12rem}
+  .kpi .v{font-size:1.7rem}
+  /* one reading size for charts, tables and explanations */
+  .lede,.meta,.panel p,.panel-head p,.legend,.brow,.brow .val,.srow,.srow .val,.kpi .k,.kpi .s,
+  table.t,table.t th,table.dt,table.dt th,ul.notes,.finding p,.finding .tag,.bnote,.status,
+  .panel>div[style],.panel div[style*="font-size"],.fl,select,.seg button,.navrow a,footer{font-size:var(--fs)!important}
+  .axis{font-size:.85rem}
+  .chip,.pgym{font-size:.8rem}
+  .strack i{font-size:.85rem}
+  /* phone: name and value on one line, bar full width below */
+  .brow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n v" "t t";gap:3px 10px;line-height:1.35}
+  .brow .name{grid-area:n} .brow .val{grid-area:v} .brow .track{grid-area:t}
+  .bars{gap:12px}
+  .axis{grid-template-columns:minmax(0,1fr)} .axis>span{display:none}
+  .track{height:20px}
   .panel{padding:14px}
-  .kpi .v{font-size:1.5rem}
-  .kpi .s,.panel-head p,.legend{font-size:.82rem}
-  table.t{font-size:.84rem} table.t th{font-size:.72rem} table.t th,table.t td{padding:7px 4px} table.t td:first-child{white-space:normal} .hsub{display:none}
   .kpis{grid-template-columns:1fr}
-  table.dt{font-size:.84rem}
+  table.t th,table.t td{padding:7px 4px} table.t td:first-child{white-space:normal} .hsub{display:none}
   .finding{grid-template-columns:1fr}
   .finding .tag{grid-row:auto}
   select{max-width:9em}
